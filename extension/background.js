@@ -1,29 +1,9 @@
-const API_URL = 'http://localhost:5000/api';
-
-let sessionQueue = new Map(); // key: eventId, value: sessionData
-
-// Initialize alarms
-chrome.runtime.onInstalled.addListener(() => {
-  chrome.alarms.create("syncData", { periodInMinutes: 1 });
-});
-
-chrome.alarms.onAlarm.addListener((alarm) => {
-  if (alarm.name === "syncData") {
-    syncToBackend();
-  }
-});
+const API_URL = 'https://youtube-analytics-pro.onrender.com/api';
 
 // Listen for messages from content scripts or popup
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'SYNC_SESSION') {
-    const data = message.data;
-    
-    // Add/Update in queue
-    sessionQueue.set(data.eventId, data);
-
-    if (message.forceSync) {
-      syncToBackend();
-    }
+    syncToBackend([message.data]);
   } else if (message.type === 'GET_AUTH_STATE') {
     chrome.storage.local.get(['accessToken', 'username'], (result) => {
       sendResponse(result);
@@ -49,13 +29,11 @@ async function setTokens(accessToken, refreshToken) {
   });
 }
 
-async function syncToBackend() {
-  if (sessionQueue.size === 0) return;
+async function syncToBackend(sessionsToSync) {
+  if (!sessionsToSync || sessionsToSync.length === 0) return;
 
   const { accessToken, refreshToken } = await getTokens();
   if (!accessToken) return; // User not logged in
-
-  const sessionsToSync = Array.from(sessionQueue.values());
 
   try {
     let response = await fetch(`${API_URL}/sync`, {
@@ -80,7 +58,7 @@ async function syncToBackend() {
         await setTokens(newAccess, newRefresh);
         
         // Retry sync
-        response = await fetch(`${API_URL}/sync`, {
+        await fetch(`${API_URL}/sync`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -91,16 +69,9 @@ async function syncToBackend() {
       } else {
         // Refresh failed, logout
         chrome.storage.local.remove(['accessToken', 'refreshToken', 'username']);
-        return;
       }
     }
-
-    if (response.ok) {
-      // Clear queue on success
-      sessionQueue.clear();
-    }
-
   } catch (error) {
-    console.error("Sync failed, will retry next alarm:", error);
+    console.error("Sync failed:", error);
   }
 }
