@@ -53,6 +53,10 @@ function sendSessionUpdate(forceSync = false) {
 
   try {
     chrome.runtime.sendMessage(payload);
+    // Clear segments so we don't send duplicates, and start a new batch
+    watchSegments = [];
+    currentSegment = null;
+    eventIdBase = Date.now().toString();
   } catch (e) {
     console.warn("Could not send message to background script:", e);
   }
@@ -79,6 +83,15 @@ function startHeartbeat() {
         // Extend current segment
         currentSegment.end = currentTime;
       }
+      
+      // Fire live tick for the popup to update in real-time
+      try {
+        chrome.runtime.sendMessage({
+          type: 'LIVE_TICK',
+          data: { delta, channel: currentChannel }
+        });
+      } catch (e) { /* ignore if popup is closed */ }
+      
     } else {
       // Seek occurred or video stalled, end current segment and start a new one next tick
       currentSegment = null;

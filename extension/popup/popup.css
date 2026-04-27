@@ -8,6 +8,7 @@
   --accent: #10b981;
   --danger: #ef4444;
   --border: #334155;
+  --nav-bg: #111827;
 }
 
 * {
@@ -18,11 +19,11 @@
 }
 
 body {
-  width: 600px;
-  height: 600px;
+  width: 450px;
+  height: 500px;
   background-color: var(--bg-color);
   color: var(--text-main);
-  overflow-y: auto;
+  overflow: hidden; /* No main scrollbar */
 }
 
 /* Utils */
@@ -101,6 +102,7 @@ header {
   padding: 1rem 1.5rem;
   background: var(--card-bg);
   border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
 }
 
 .user-controls {
@@ -117,34 +119,85 @@ header {
   font-size: 0.875rem;
 }
 
-.content {
-  padding: 1.5rem;
+/* Tab Navigation */
+.tab-nav {
   display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+  background: var(--nav-bg);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 0.75rem 0;
+  background: transparent;
+  color: var(--text-muted);
+  border: none;
+  border-bottom: 3px solid transparent;
+  border-radius: 0;
+  font-weight: 600;
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.tab-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-main);
+}
+
+.tab-btn.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+
+.content {
+  flex: 1;
+  padding: 1rem;
+  overflow: hidden;
+  position: relative;
+}
+
+.tab-content {
+  width: 100%;
+  height: 100%;
+}
+
+.scrollable-tab {
+  overflow-y: auto;
 }
 
 .card {
   background: var(--card-bg);
   border-radius: 12px;
   padding: 1.25rem;
+  height: 100%;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+}
+
+.card.full-height {
+  display: flex;
+  flex-direction: column;
 }
 
 .card h3 {
   font-size: 1rem;
   margin-bottom: 1rem;
   color: var(--text-muted);
+  flex-shrink: 0;
 }
 
-.charts-row {
-  display: flex;
-  gap: 1rem;
-}
-
-.chart-container {
+.chart-container canvas {
   flex: 1;
-  min-width: 0; /* Prevents flex overflow */
+  min-height: 0; /* Important for Chart.js in flex container */
+}
+
+.donut-wrapper {
+  flex: 1;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 0;
 }
 
 /* Tables */

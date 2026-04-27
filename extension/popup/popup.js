@@ -24,6 +24,21 @@ document.addEventListener('DOMContentLoaded', () => {
   loginBtn.addEventListener('click', () => handleAuth('login'));
   registerBtn.addEventListener('click', () => handleAuth('register'));
   logoutBtn.addEventListener('click', handleLogout);
+
+  // Tab Navigation
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const tabContents = document.querySelectorAll('.tab-content');
+
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      tabBtns.forEach(b => b.classList.remove('active'));
+      tabContents.forEach(c => c.classList.add('hidden'));
+
+      btn.classList.add('active');
+      const targetId = btn.getAttribute('data-target');
+      document.getElementById(targetId).classList.remove('hidden');
+    });
+  });
 });
 
 // Auth Logic
@@ -100,6 +115,8 @@ function showDashboard(username, accessToken) {
 }
 
 // Data Fetching and Rendering
+let currentDashboardData = null;
+
 async function fetchDashboardStats(token) {
   try {
     const res = await fetch(`${API_URL}/stats/dashboard`, {
@@ -107,8 +124,8 @@ async function fetchDashboardStats(token) {
     });
     
     if (res.ok) {
-      const data = await res.json();
-      renderDashboard(data);
+      currentDashboardData = await res.json();
+      renderDashboard(currentDashboardData);
     } else if (res.status === 401) {
       handleLogout(); // Token expired and background script didn't refresh it
     }
@@ -116,6 +133,29 @@ async function fetchDashboardStats(token) {
     console.error('Failed to fetch stats:', error);
   }
 }
+
+// Live Update Listener
+chrome.runtime.onMessage.addListener((msg) => {
+  if (msg.type === 'LIVE_TICK' && currentDashboardData) {
+    const { delta, channel } = msg.data;
+    
+    // Update summary stats
+    currentDashboardData.summary.today.watchTime += delta;
+    currentDashboardData.summary.total.watchTime += delta;
+    
+    // Update channel stats
+    const ch = currentDashboardData.topChannels.find(c => c.channel === channel);
+    if (ch) {
+      ch.totalWatchTime += delta;
+    } else {
+      // Add new channel temporarily to top channels for live view
+      currentDashboardData.topChannels.push({ channel, totalWatchTime: delta });
+    }
+    
+    // Re-render
+    renderDashboard(currentDashboardData);
+  }
+});
 
 function formatTime(seconds) {
   const h = Math.floor(seconds / 3600);

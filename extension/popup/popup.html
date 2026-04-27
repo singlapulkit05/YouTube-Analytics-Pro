@@ -29,53 +29,70 @@
       </div>
     </header>
 
+    <!-- Tab Navigation -->
+    <nav class="tab-nav">
+      <button class="tab-btn active" data-target="tab-summary">Summary</button>
+      <button class="tab-btn" data-target="tab-trend">Trend</button>
+      <button class="tab-btn" data-target="tab-top">Top</button>
+      <button class="tab-btn" data-target="tab-channels">Channels</button>
+    </nav>
+
     <div class="content">
       
-      <!-- Summary Stats -->
-      <section class="card summary-section">
-        <h3>Summary</h3>
-        <table id="summaryTable">
-          <thead>
-            <tr>
-              <th>Period</th>
-              <th>Videos</th>
-              <th>Watch Time</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- Populated by JS -->
-          </tbody>
-        </table>
-      </section>
-
-      <!-- Charts Row -->
-      <div class="charts-row">
-        <section class="card chart-container">
-          <h3>Avg. watch time/day</h3>
-          <canvas id="barChart"></canvas>
-        </section>
-
-        <section class="card chart-container">
-          <h3>Top 10 Channels</h3>
-          <canvas id="donutChart"></canvas>
+      <!-- Tab 1: Summary -->
+      <div id="tab-summary" class="tab-content active">
+        <section class="card">
+          <h3>Summary Overview</h3>
+          <table id="summaryTable">
+            <thead>
+              <tr>
+                <th>Period</th>
+                <th>Videos</th>
+                <th>Watch Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
         </section>
       </div>
 
-      <!-- Channel Table -->
-      <section class="card">
-        <h3>Channel Breakdown</h3>
-        <table id="channelTable">
-          <thead>
-            <tr>
-              <th>Channel Name</th>
-              <th>Watch Time</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- Populated by JS -->
-          </tbody>
-        </table>
-      </section>
+      <!-- Tab 2: Daily Trend -->
+      <div id="tab-trend" class="tab-content hidden">
+        <section class="card chart-container full-height">
+          <h3>Avg. watch time/day</h3>
+          <canvas id="barChart"></canvas>
+        </section>
+      </div>
+
+      <!-- Tab 3: Top Channels -->
+      <div id="tab-top" class="tab-content hidden">
+        <section class="card chart-container full-height">
+          <h3>Top 10 Channels</h3>
+          <div class="donut-wrapper">
+            <canvas id="donutChart"></canvas>
+          </div>
+        </section>
+      </div>
+
+      <!-- Tab 4: Channel Breakdown -->
+      <div id="tab-channels" class="tab-content hidden scrollable-tab">
+        <section class="card">
+          <h3>All Channels</h3>
+          <table id="channelTable">
+            <thead>
+              <tr>
+                <th>Channel Name</th>
+                <th>Watch Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </section>
+      </div>
 
     </div>
   </div>
