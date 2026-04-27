@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>YouTube Analytics</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+
+  <!-- Login View -->
+  <div id="loginView" class="view">
+    <div class="login-container">
+      <h2>YouTube Analytics Pro</h2>
+      <div id="loginError" class="error"></div>
+      <input type="text" id="username" placeholder="Username">
+      <input type="password" id="password" placeholder="Password">
+      <button id="loginBtn">Login</button>
+      <button id="registerBtn" class="secondary">Register</button>
+    </div>
+  </div>
+
+  <!-- Dashboard View -->
+  <div id="dashboardView" class="view hidden">
+    <header>
+      <h2>YouTube Analytics</h2>
+      <div class="user-controls">
+        <span id="currentUser"></span>
+        <button id="logoutBtn">Logout</button>
+      </div>
+    </header>
+
+    <div class="content">
+      
+      <!-- Summary Stats -->
+      <section class="card summary-section">
+        <h3>Summary</h3>
+        <table id="summaryTable">
+          <thead>
+            <tr>
+              <th>Period</th>
+              <th>Videos</th>
+              <th>Watch Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Populated by JS -->
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Charts Row -->
+      <div class="charts-row">
+        <section class="card chart-container">
+          <h3>Avg. watch time/day</h3>
+          <canvas id="barChart"></canvas>
+        </section>
+
+        <section class="card chart-container">
+          <h3>Top 10 Channels</h3>
+          <canvas id="donutChart"></canvas>
+        </section>
+      </div>
+
+      <!-- Channel Table -->
+      <section class="card">
+        <h3>Channel Breakdown</h3>
+        <table id="channelTable">
+          <thead>
+            <tr>
+              <th>Channel Name</th>
+              <th>Watch Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Populated by JS -->
+          </tbody>
+        </table>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="chart.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "YouTube Analytics Pro",
+  "version": "1.0.0",
+  "description": "Track, analyze, and visualize your YouTube and YouTube Music watch history.",
+  "permissions": [
+    "storage",
+    "alarms",
+    "tabs"
+  ],
+  "host_permissions": [
+    "*://*.youtube.com/*",
+    "http://localhost:5000/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.youtube.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "YouTube Analytics"
+  }
+}
