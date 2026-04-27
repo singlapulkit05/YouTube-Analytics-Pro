@@ -11,7 +11,7 @@ const watchSessionSchema = new mongoose.Schema({
   title: { type: String },
   channel: { type: String },
   source: { type: String, enum: ['youtube', 'music.youtube'], required: true },
-  tabId: { type: Number, required: true },
+  tabId: { type: String, required: true },
   eventId: { type: String, required: true, unique: true }, // For deduplication
   watchSegments: [segmentSchema],
   date: { type: Date, default: Date.now, index: true }
