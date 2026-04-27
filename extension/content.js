@@ -188,5 +188,13 @@ window.addEventListener('beforeunload', () => {
   }
 });
 
+// Reply to popup with unsynced time
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  if (msg.type === 'GET_PENDING_STATS') {
+    const pendingTime = watchSegments.reduce((acc, seg) => acc + (seg.end - seg.start), 0);
+    sendResponse({ pendingTime, channel: currentChannel });
+  }
+});
+
 // Initial load
 setTimeout(initVideoTracking, 2000);
