@@ -18,7 +18,10 @@ function extractVideoMeta() {
   const urlParams = new URLSearchParams(window.location.search);
   const videoId = urlParams.get('v');
   
-  if (!videoId) return null;
+  if (!videoId) {
+    console.log('[YT Analytics] No videoId found in URL');
+    return null;
+  }
 
   let title = '';
   let channel = '';
@@ -31,6 +34,7 @@ function extractVideoMeta() {
     channel = document.querySelector('yt-formatted-string.byline')?.innerText || '';
   }
 
+  console.log(`[YT Analytics] Meta Extracted - ID: ${videoId}, Title: ${title}, Channel: ${channel}`);
   return { videoId, title, channel };
 }
 
@@ -51,6 +55,8 @@ function sendSessionUpdate(forceSync = false) {
     forceSync
   };
 
+  console.log('[YT Analytics] Sending Session Update to Background:', payload);
+
   try {
     chrome.runtime.sendMessage(payload);
     // Clear segments so we don't send duplicates, and start a new batch
@@ -58,18 +64,25 @@ function sendSessionUpdate(forceSync = false) {
     currentSegment = null;
     eventIdBase = Date.now().toString();
   } catch (e) {
-    console.warn("Could not send message to background script:", e);
+    console.warn("[YT Analytics] Could not send message to background script:", e);
   }
 }
 
 function startHeartbeat() {
   if (heartbeatInterval) clearInterval(heartbeatInterval);
+  console.log('[YT Analytics] Heartbeat Started');
   
   heartbeatInterval = setInterval(() => {
-    if (!videoElement) return;
+    if (!videoElement) {
+      console.log('[YT Analytics] Heartbeat: No video element');
+      return;
+    }
 
     const isPlaying = !videoElement.paused && !videoElement.ended && videoElement.readyState > 2;
-    if (!isPlaying) return;
+    if (!isPlaying) {
+      // Don't spam console when paused, just silently return
+      return;
+    }
 
     const currentTime = videoElement.currentTime;
     const delta = currentTime - lastTimestamp;
@@ -84,6 +97,8 @@ function startHeartbeat() {
         currentSegment.end = currentTime;
       }
       
+      console.log(`[YT Analytics] Tick - Delta: ${delta.toFixed(3)}s, Segments Count: ${watchSegments.length}`);
+      
       // Fire live tick for the popup to update in real-time
       try {
         chrome.runtime.sendMessage({
@@ -93,6 +108,7 @@ function startHeartbeat() {
       } catch (e) { /* ignore if popup is closed */ }
       
     } else {
+      console.log(`[YT Analytics] Heartbeat: Skip detected (Delta: ${delta.toFixed(3)}s)`);
       // Seek occurred or video stalled, end current segment and start a new one next tick
       currentSegment = null;
     }
@@ -103,8 +119,10 @@ function startHeartbeat() {
 }
 
 function initVideoTracking() {
+  console.log('[YT Analytics] initVideoTracking called');
   videoElement = document.querySelector('video');
   if (!videoElement) {
+    console.log('[YT Analytics] No video element found, retrying...');
     setTimeout(initVideoTracking, 1000);
     return;
   }
@@ -113,6 +131,7 @@ function initVideoTracking() {
   if (!meta || !meta.videoId) return;
 
   if (meta.videoId !== currentVideoId) {
+    console.log('[YT Analytics] Video switched to:', meta.videoId);
     // We switched videos
     if (currentVideoId) {
       sendSessionUpdate(true); // Sync previous video
@@ -129,19 +148,27 @@ function initVideoTracking() {
   lastTimestamp = videoElement.currentTime;
   startHeartbeat();
 
-  videoElement.addEventListener('pause', () => {
-    currentSegment = null; // Break segment on pause
-  });
+  // Make sure we only attach listeners once per video element
+  if (!videoElement.hasAttribute('data-yta-tracked')) {
+    videoElement.setAttribute('data-yta-tracked', 'true');
+    
+    videoElement.addEventListener('pause', () => {
+      console.log('[YT Analytics] Video Paused');
+      currentSegment = null; // Break segment on pause
+    });
 
-  videoElement.addEventListener('seeked', () => {
-    currentSegment = null; // Break segment on seek
-    lastTimestamp = videoElement.currentTime;
-  });
+    videoElement.addEventListener('seeked', () => {
+      console.log('[YT Analytics] Video Seeked');
+      currentSegment = null; // Break segment on seek
+      lastTimestamp = videoElement.currentTime;
+    });
 
-  videoElement.addEventListener('ended', () => {
-    currentSegment = null;
-    sendSessionUpdate(true);
-  });
+    videoElement.addEventListener('ended', () => {
+      console.log('[YT Analytics] Video Ended');
+      currentSegment = null;
+      sendSessionUpdate(true);
+    });
+  }
 }
 
 // Support for YT SPA navigation
